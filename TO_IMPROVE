@@ -1,0 +1,13 @@
+TO IMPROVE
+
+1. Training dataset construction with both last week and last year  /// DONE
+2. Testing dataset construction to avoid "FUCK"s /// not yet perfect
+3. Type "C" issue??
+4. Regression method employed - test others
+
+POSSIBILITY
+
+a. Use a serie (last computed value from test dataset use for next previous week)
+b. Only fit the function with previous year stuff
+c. NaN values not replaced by mean but mean for Dept and Store :)
+

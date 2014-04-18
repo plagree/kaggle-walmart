@@ -1,0 +1,7 @@
+# .gitignore file
+*.py[cod]
+*.sw[mnpcod]
+*.swl
+*.csv
+*.txt
+datasets*/
