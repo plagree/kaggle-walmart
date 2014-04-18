@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 #-*-coding: utf-8 -*-
 
-from walmart import *
+import pandas as pd
 from sklearn import *
+
 
 def fit_regressors():
     dico = {}

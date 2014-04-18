@@ -6,37 +6,24 @@ __date__ : 26/03/14 -
 
 """
 
+import sys
 import time
 import pandas as pd
 import numpy as np
 import datetime as dt
-import cPickle
 from sklearn import preprocessing
 from sklearn.svm import LinearSVC
 import  scipy.stats as stats
 import sklearn.linear_model as lm
 from week_searcher import *
+from fitting import fit_regressors
+from test import test
 
 Types = ["A", "B", "C"]
 Specs = [True, False]
 
-def storesdata(filename):
-    X = pd.read_table(filename, sep=',', warn_bad_lines=True,
-                      error_bad_lines=True)
-    # X = np.asarray(X.values, dtype
-    return X
 
-def featuresdata(filename):
-    X = pd.read_table(filename, sep=',', warn_bad_lines=True,
-                      error_bad_lines=True)
-    return X
-
-def traindata(filename):
-    X = pd.read_table(filename, sep=',', warn_bad_lines=True,
-                      error_bad_lines=True)
-    return X
-
-def testdata(filename):
+def load_data(filename):
     X = pd.read_table(filename, sep=',', warn_bad_lines=True,
                       error_bad_lines=True)
     return X
@@ -44,13 +31,10 @@ def testdata(filename):
 def join(Xtrain, Xfeatures, Xstores):
     Xmerged = pd.merge(Xtrain, Xfeatures, how='inner')
     Xfinal = pd.merge(Xmerged, Xstores, how='inner')
-    # labels = Xfinal["Weekly_Sales"]
-    # Drop feature to Xfinal
-    return Xfinal # , labels
+    return Xfinal
 
 def createDataset(Xtypespec, Xttype, Xspec, holiday, perfect=False):
     Xtypespec = Xtypespec.sort(["Store", "Dept", "Date"])
-    # X1.reset_index(drop=True)
     # Create Dataframe
     Size = []
     Store = []
@@ -69,7 +53,7 @@ def createDataset(Xtypespec, Xttype, Xspec, holiday, perfect=False):
     MarkDown51 = []
     CPI1 = []
     Unemployment1 = []
-    # Week week -1 (not holidays)
+    # Week year -1 week -1 (not holidays)
     Weekly_Sales2 = []
     Temperature2 = []
     Fuel_Price2 = []
@@ -116,114 +100,12 @@ def createDataset(Xtypespec, Xttype, Xspec, holiday, perfect=False):
             previousStore = row["Store"]
             previousDept = row["Dept"]
 
-        # ### LAST YEAR ###
-        # if holiday:
-        #     datel = str(date - dt.timedelta(days=365) - dt.timedelta(days=110))
-        #     dater = str(date - dt.timedelta(days=365) + dt.timedelta(days=11))
-        #     if ok:
-        #         liste = Xspec_curr[(Xspec_curr.Date > datel) & (Xspec_curr.Date < dater)]
-        #     else:
-        #         liste = []
-        # else:
-        #     datel = str(date - dt.timedelta(days=365) - dt.timedelta(days=100))
-        #     dater = str(date - dt.timedelta(days=365) + dt.timedelta(days=4))
-        #     if ok2:
-        #         liste = Xttype_curr[(Xttype_curr.Date > datel) & (Xttype_curr.Date < dater)]
-        #     else:
-        #         liste = []
-
-        # if len(liste) == 0:
-        #     if perfect:
-        #         continue
-        #     last_year = row
-        # else:
-        #     last_year = liste.iloc[len(liste)-1]
-        # 
-        # ###### WEEKLY_SALES MANAGEMENT FOR TESTING ######
-        # sales = last_year["Weekly_Sales"]
-        # if sales is None:
-        #     if holiday:
-        #         datel = str(date - dt.timedelta(days=730) - dt.timedelta(days=110))
-        #         dater = str(date - dt.timedelta(days=730) + dt.timedelta(days=11))
-        #         if ok:
-        #             liste = Xspec_curr[(Xspec_curr.Date > datel) & (Xspec_curr.Date < dater)]
-        #         else:
-        #             liste = []
-        #     else:
-        #         datel = str(date - dt.timedelta(days=730) - dt.timedelta(days=100))
-        #         dater = str(date - dt.timedelta(days=730) + dt.timedelta(days=4))
-        #         if ok2:
-        #             liste = Xttype_curr[(Xttype_curr.Date > datel) & (Xttype_curr.Date < dater)]
-        #         else:
-        #             liste = []
-        #     if len(liste) == 0:
-        #         print "PROBLEM"
-        #     else:
-        #         sales = liste.iloc[len(liste)-1]["Weekly_Sales"]
-        # if sales is None:
-        #     print "PROBLEM"
-        # ##################################################
-
         last_year, sales = last_year_same_week(row, date, Xttype_curr, Xspec_curr,
                                                ok, ok2, perfect, holiday)
 
         if last_year is None:
             continue
 
-        # ## LAST WEEK ##
-        # datel = str(date - dt.timedelta(days=28))
-        # dater = str(date - dt.timedelta(days=4))
-        # if ok2:
-        #     liste = Xttype_curr[(Xttype_curr.Date > datel) & (Xttype_curr.Date < dater)]
-        # else:
-        #     liste = []
-        # if len(liste) == 0:
-        #     if perfect:
-        #         continue
-        #     if holiday:
-        #         last_week = Xttype_curr.iloc[0]
-        #     else:
-        #         last_week = row
-        # else:
-        #     last_week = liste.iloc[len(liste)-1]
-
-        # sales2 = last_week["Weekly_Sales"]
-
-        # ####### NEW WORK ############
-        # if sales2 is None:
-        #     datel = str(date - dt.timedelta(days=365) - dt.timedelta(days=100))
-        #     dater = str(date - dt.timedelta(days=365) - dt.timedelta(days=4))
-        #     if ok2:
-        #         liste = Xttype_curr[(Xttype_curr.Date > datel) & (Xttype_curr.Date < dater)]
-        #     else:
-        #         liste = []
-        #     if len(liste) == 0:
-        #         datel = str(date - dt.timedelta(days=730) - dt.timedelta(days=100))
-        #         dater = str(date - dt.timedelta(days=730) - dt.timedelta(days=4))
-        #         if ok2:
-        #             liste = Xttype_curr[(Xttype_curr.Date > datel) & (Xttype_curr.Date < dater)]
-        #         else:
-        #             liste = []
-        #         if (len(liste)) == 0:
-        #             print "PROBLEM"
-        #         else:
-        #             sales2 = liste.iloc[len(liste)-1]["Weekly_Sales"]
-        #     else:
-        #         sales2 = liste.iloc[len(liste)-1]["Weekly_Sales"]
-        #         if sales2 is None:
-        #             datel = str(date - dt.timedelta(days=730) - dt.timedelta(days=100))
-        #             dater = str(date - dt.timedelta(days=730) - dt.timedelta(days=4))
-        #             if ok2:
-        #                 liste = Xttype_curr[(Xttype_curr.Date > datel) & (Xttype_curr.Date < dater)]
-        #             else:
-        #                 liste = []
-        #             if (len(liste)) == 0:
-        #                 print "PROBLEM"
-        #             else:
-        #                 sales2 = liste.iloc[len(liste)-1]["Weekly_Sales"]
-
-        # #############################
-    
         last_week, sales2 = last_year_previous_week(row, date, Xttype_curr, Xspec_curr, ok, ok2, perfect, holiday)
 
         if last_week is None:
@@ -269,7 +151,6 @@ def createDataset(Xtypespec, Xttype, Xspec, holiday, perfect=False):
         CPI3.append(row["CPI"])
         Unemployment3.append(row["Unemployment"])
 
-
     # Creation dictionary
     dic["Size"] = Size
     dic["Store"] = Store
@@ -311,29 +192,24 @@ def createDataset(Xtypespec, Xttype, Xspec, holiday, perfect=False):
     X = pd.DataFrame(dic)
     return X
 
-def createTestDataset():
-    dicoTest = runningTests2()
-    Xorigin = runningTests()
+def createMyTestingDataset():
+    dicoTest = loadAndCleanTestingDataset()
+    Xorigin = loadTrainingDataset()
     liste_datasets = []
     
     for Type in Types:
         X = dicoTest[Type]
         XType = Xorigin[(Xorigin.Type == Type)]
-        XType = cleanBigDataset2(XType)
+        XType = cleanMarkDowns(XType)
         Xtotal = pd.concat([X, XType])
         XttypeNoSpec = Xtotal[(Xtotal.IsHoliday == False)]
-        # date = dt.datetime.strptime(X.iloc[0]["Date"], "%Y-%m-%d").date()
-        # date = date - dt.timedelta(days=365) - dt.timedelta(days=15)
-        # Xtotal = Xtotal[Xtotal.Date > str(date)]
         Xtotal = Xtotal.sort(["Store", "Dept", "Date"])
         for spec in Specs:
             start_time = time.time()
             Xtypespec= X[(X.IsHoliday == spec)]
             Xtypespec = Xtypespec.sort(["Store", "Dept", "Date"])
-            # Xttype = Xtotal[Xtotal.Type == Type]
             if spec:
                 Xtotaltypespec = Xtotal[Xtotal.IsHoliday == True]
-            # X2 = createDataset(X, XttypeNoSpec, X, spec, perfect)
                 Xnew = createDataset(Xtypespec, XttypeNoSpec, Xtotaltypespec, spec, False)
                 liste_datasets.append(Xnew)
             else:
@@ -346,14 +222,14 @@ def createTestDataset():
     Xres.to_csv("test_dataset.csv", index=False)
     return Xres
 
-def createTrainDataset():
-    Xorigin = runningTests()
+def createMyTrainingDataset():
+    Xorigin = loadTrainingDataset()
     perfect = True
     for Type in Types:
-        XttypeNoSpec = cleanBigDataset(Xorigin, Type)
+        XttypeNoSpec = getAndCleanTypeNotHoliday(Xorigin, Type)
         for spec in Specs:
             start_time = time.time()
-            X = originalDatasetCleaning(Xorigin, Type, spec)
+            X = getAndCleanGivenTypeSpec(Xorigin, Type, spec)
             X2 = createDataset(X, XttypeNoSpec, X, spec, perfect)
             str_spec = ""
             if spec:
@@ -363,13 +239,10 @@ def createTrainDataset():
             print time.time() - start_time, "seconds"
 
 
-def originalDatasetCleaning(Xfinal, Type="A", spec=True): #, labels
+def getAndCleanGivenTypeSpec(Xfinal, Type="A", spec=True):
     indices = np.where((Xfinal["Type"]==Type) & (Xfinal["IsHoliday"]==spec))[0]
     Xtest = Xfinal.iloc[indices, :]
 
-    # Xtest = Xtest.drop('Type', 1)
-    # Xtest = Xtest.drop('IsHoliday', 1)
-
     mean1 = stats.nanmean(Xtest["MarkDown1"])
     mean2 = stats.nanmean(Xtest["MarkDown2"])
     mean3 = stats.nanmean(Xtest["MarkDown3"])
@@ -382,17 +255,12 @@ def originalDatasetCleaning(Xfinal, Type="A", spec=True): #, labels
     Xtest["MarkDown4"].fillna(value=mean4, inplace=True)
     Xtest["MarkDown5"].fillna(value=mean5, inplace=True)
 
-    # X = createDataset(Xtest)
-
     return Xtest
 
-def cleanBigDataset(Xfinal, Type="A"):
+def getAndCleanTypeNotHoliday(Xfinal, Type="A"):
     indices = np.where((Xfinal["Type"]==Type) & (Xfinal["IsHoliday"]==False))[0]
     Xtest = Xfinal.iloc[indices, :]
 
-    # Xtest = Xtest.drop('Type', 1)
-    # Xtest = Xtest.drop('IsHoliday', 1)
-
     mean1 = stats.nanmean(Xtest["MarkDown1"])
     mean2 = stats.nanmean(Xtest["MarkDown2"])
     mean3 = stats.nanmean(Xtest["MarkDown3"])
@@ -405,18 +273,11 @@ def cleanBigDataset(Xfinal, Type="A"):
     Xtest["MarkDown4"].fillna(value=mean4, inplace=True)
     Xtest["MarkDown5"].fillna(value=mean5, inplace=True)
 
-    # X = createDataset(Xtest)
-
     return Xtest
 
-def cleanBigDataset2(Xfinal):
-    #indices = np.where((Xfinal["Type"]==Type))[0]
-    #Xtest = Xfinal.iloc[indices, :]
+def cleanMarkDowns(Xfinal):
     Xtest = Xfinal
 
-    # Xtest = Xtest.drop('Type', 1)
-    # Xtest = Xtest.drop('IsHoliday', 1)
-
     mean1 = stats.nanmean(Xtest["MarkDown1"])
     mean2 = stats.nanmean(Xtest["MarkDown2"])
     mean3 = stats.nanmean(Xtest["MarkDown3"])
@@ -429,35 +290,26 @@ def cleanBigDataset2(Xfinal):
     Xtest["MarkDown4"].fillna(value=mean4, inplace=True)
     Xtest["MarkDown5"].fillna(value=mean5, inplace=True)
 
-    # X = createDataset(Xtest)
-
     return Xtest
 
-def runningTests():
-    X_stores = storesdata('stores.csv')
-    X_features = featuresdata('features.csv')
-    X_train = traindata('train.csv')
-    # X_test = testdata('test.csv')
+def loadTrainingDataset():  # Supposed to be already cleaned
+    X_stores = load_data('stores.csv')
+    X_features = load_data('features.csv')
+    X_train = load_data('train.csv')
     Xfinal = join(X_train, X_features, X_stores)
     return Xfinal
-    # Xtest = testnormalweekA(Xfinal)
-    # return Xtest
 
-def runningTests2(dataset="test.csv"):
-    X_stores = storesdata('stores.csv')
-    X_features = featuresdata('features.csv')
-    X_test = testdata(dataset)
+def loadAndCleanTestingDataset(dataset="test.csv"):
+    X_stores = load_data('stores.csv')
+    X_features = load_data('features.csv')
+    X_test = load_data(dataset)
     dico_tests = {}
-    # X_test = testdata('test.csv')
     Xfinal = join(X_test, X_features, X_stores)
     for Type in Types:
         listeXs = []
         for spec in Specs:
             indices = np.where((Xfinal["Type"]==Type) & (Xfinal["IsHoliday"]==spec))[0]
             Xtest = Xfinal.iloc[indices, :]
-
-            # Xtest = Xtest.drop('Type', 1)
-            # Xtest = Xtest.drop('IsHoliday', 1)
 
             mean1 = stats.nanmean(Xtest["MarkDown1"])
             mean2 = stats.nanmean(Xtest["MarkDown2"])
@@ -480,9 +332,9 @@ def runningTests2(dataset="test.csv"):
         dico_tests[Type] = newXfinal
     return dico_tests
 
-def loadTestDataset():
+def loadMyTestingDataset():
     print "Loading dataset..."
-    X = testdata("test_dataset.csv")
+    X = load_data("test_dataset.csv")
     X = X.drop("Weekly_Sales3", 1)
     print "Cleaning dataset..."
     X = fillNanTestDataset(X)
@@ -530,24 +382,7 @@ def fillNanTestDataset(Xfinal):
     newXfinal2 = pd.concat(listeXs)
     return newXfinal2
 
-def dumb(Xfinal):
-    listeXs = []
-    for Type in Types:
-        for spec in Specs:
-            indices = np.where((Xfinal["Type"]==Type) & (Xfinal["IsHoliday"]==spec))[0]
-            Xtest = Xfinal.iloc[indices, :]
-
-            mean1 = stats.nanmean(Xtest["Weekly_Sales1"])
-            mean2 = stats.nanmean(Xtest["Weekly_Sales2"])
-
-            Xtest["Weekly_Sales1"].fillna(value=mean1, inplace=True)
-            Xtest["Weekly_Sales2"].fillna(value=mean2, inplace=True)
-            listeXs.append(Xtest)
-    newXfinal2 = pd.concat(listeXs)
-    return newXfinal2
-
 def predic(X, dico=None):
-    #X = X.sort(["Type", "Dept", "Date"])
     with open("predictions.csv", "w") as myFile:
         myFile.write("Id,Weekly_Sales\n")
         for Type in Types:
@@ -570,41 +405,28 @@ def predic(X, dico=None):
                     myFile.write(identifiers[i]+','+str(Res[i])+"\n")
     return
 
-def predic2(X, dico=None):
-    X = X.sort(["Store", "Dept", "Date"])
-    with open("predictions.csv", "w") as myFile:
-        myFile.write("Id,Weekly_Sales\n")
-        for item in X.iterrows():
-            # print str(item)
-            item = item[1]
-            if item.get("IsHoliday") == True:
-                clf = dico[item.get("Type")+"spec"]
-            else:
-                clf = dico[item.get("Type")]
-            identifier = str(item.get("Store"))+"_"+str(item.get("Dept"))+"_"+item.get("Date")
-            item = item.drop("Store")
-            item = item.drop("Dept")
-            item = item.drop("Date")
-            item = item.drop("Type")
-            item = item.drop("IsHoliday")
-            # print str(item)
-            res = clf.predict(item)
-            myFile.write(identifier+','+str(res)+"\n")
-    return
-
 if __name__ == '__main__':
-    X_stores = storesdata('stores.csv')
-    X_features = featuresdata('features.csv')
-    X_train, labels = traindata('train.csv')
-    X_test = testdata('test.csv')
-    
-    X, labels = data(filename)
-    
-    clf = lm.LogisticRegression(penalty='l2', dual=True, tol=0.0001, 
-                             C=1.0, fit_intercept=True, intercept_scaling=1.0, 
-                             class_weight=None, random_state=None)
-    
-    X = preprocessing.scale(X)	
-    X_test = preprocessing.scale(X_test)
-    
-    createSub(clf, X, labels, X_test)
+    """ Two parameters to this script:
+        --create : create every dataset (for each type, spec, and test)
+        --predict : load created datasets, predict results of the
+                    testing dataset and write results on predictions.csv
+    """
+    args = sys.argv
+    if len(args) not in [2, 3]:
+        print "Usage: python walmart.py\nParameters available (at least 1): "+ \
+            "--create --predict --test"
+
+    for arg in args:
+        if arg == "--create":
+            # Training and Testing dataset creation
+            createMyTrainingDataset()
+            createMyTestingDataset()
+        elif arg == "--predict":
+            # Prediction and wrting in a CSV file of
+            # results on testing dataset
+            dico = fit_regressors()
+            X = loadMyTestingDataset()
+            predic(X, dico)
+        elif arg == "--test":
+            # Tests on training datasets (90% for training, 10% for measure)
+            test()

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 #-*-coding: utf-8 -*-
 
-from walmart import *
-from sklearn import *
 import random
+import pandas as pd
+from sklearn import *
+
 
 def test():
     for Type in ["A", "B", "C"]:
@@ -11,12 +12,10 @@ def test():
             print Type, " ", spec
             X = pd.read_table(Type+spec+"values.csv", sep=',', warn_bad_lines=True, error_bad_lines=True)
             length = len(X)
-            print length
             number = length * 9 / 10
             liste = random.sample(range(length), number)
             missing = list(set(range(length)) - set(liste))
             X1 = X.iloc[liste]
-            print len(X1)
             X1 = X1.drop("Date", 1)
             X1 = X1.drop("Store", 1)
             X1 = X1.drop("Dept", 1)
@@ -24,14 +23,13 @@ def test():
             Y1 = X1["Weekly_Sales3"]
             X1 = X1.drop("Weekly_Sales3", 1)
             X2 = X.iloc[missing]
-            print len(X2)
             X2 = X2.drop("Date", 1)
             X2 = X2.drop("Dept", 1)
             X2 = X2.drop("Store", 1)
             X2 = X2.drop("Type", 1)
             Y2 = X2["Weekly_Sales3"]
             X2 = X2.drop("Weekly_Sales3", 1)
-            return X1, Y1, X2, Y2
+            # return X1, Y1, X2, Y2
             
             # X1 = preprocessing.scale(X1)
             # X2 = preprocessing.scale(X2)
@@ -67,5 +65,4 @@ def test():
             #print "Error Lasso: " + str(error3)
             print "Error Ridge: " + str(error4)
             print "Error BayesianRidge: " + str(error5)
-            break
     return #X1, X2, Y1, Y2#, clf
