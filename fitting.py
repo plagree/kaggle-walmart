@@ -28,7 +28,22 @@ def fit_regressors():
             #                   cache_size=1000)
             
             # rbf_svc.fit(X1, Y1)
-            clf = linear_model.LassoLars(alpha = 0.1)
+            if Type == "A":
+                if spec == "":
+                    alpha = 0.4
+                else:
+                    alpha = 1.0
+            if Type == "B":
+                if spec == "":
+                    alpha = 0.1
+                else:
+                    alpha = 0.4
+            if Type == "C":
+                if spec == "":
+                    alpha = 1.0
+                else:
+                    alpha = 1.0
+            clf = linear_model.LassoLars(alpha = alpha)
             clf.fit(X, Y)
             dico[Type+spec] = clf
     return dico
